@@ -1,0 +1,223 @@
+version: "3.1"
+services:
+  # php7:
+  #   build:
+  #     context:  ./docker/
+  #     dockerfile: php7/php7.Dockerfile
+  #   env_file: .env
+  #   container_name: ${APP_NAME:?err}-php7
+  #   hostname: ${PHP7_HOST_NAME}
+  #   ports:
+  #     - "9000:9000"
+  #   links:
+  #     - opensearch
+  #     - mysql
+  #     - mariadb
+  #   depends_on:
+  #     - opensearch
+  #     - mysql
+  #     - mariadb
+  #   volumes:
+  #     - "./public_html2:/var/www/html/mageos.docker"
+  #     #- ".env:/var/www/scripts"
+  #     #- "./docker/scripts:/var/www/scripts"
+  #     - ./docker/php7/config/custom.ini:/usr/local/etc/php/conf.d/custom.ini    
+  #   networks:
+  #     magento:
+  #       aliases:
+  #         - ${PHP7_HOST_NAME}
+  php8:
+    build:
+      context: ./docker/
+      dockerfile: php8/php8.Dockerfile
+    env_file: .env
+    container_name: ${APP_NAME}-php8
+    hostname: ${PHP8_HOST_NAME}
+    ports:
+      - "9008:9008"
+    links:
+      - opensearch
+      - mysql
+      - mariadb
+    depends_on:
+      - opensearch
+      - mysql
+      - mariadb
+    volumes:
+      - "./public_html:/var/www/html/"
+      - "./env_sample:/var/www/.env"
+      - "./docker/scripts:/var/www/"
+      - ./docker/php8/config/custom.ini:/usr/local/etc/php8/conf.d/custom.ini
+    networks:
+      magento:
+        aliases:
+          - ${PHP8_HOST_NAME}
+  nginx:
+    env_file: .env
+    image: ${NGINX_VERSION}
+    container_name: ${APP_NAME}-nginx
+    hostname: ${NGINX_HOST}
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+      - opensearch
+      - mysql
+      - mariadb
+    depends_on:
+      - opensearch
+      - mysql
+      - mariadb
+    volumes:
+      - "./project_folder:/var/www/html"
+      - "./docker/nginx/config:/etc/nginx/conf.d"
+    networks:
+      magento:
+        aliases:
+          - ${NGINX_HOST}
+  mariadb:
+    hostname: ${MARIADB_HOST}
+    container_name: ${APP_NAME}-mariadb
+    image: ${MARIADB_VERSION}
+    shm_size: ${MARIADB_SHM_SIZE}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MARIADB_DATABASE} 
+      MYSQL_USER: ${MARIADB_USER} 
+      MYSQL_PASSWORD=: ${MARIADB_PASSWORD}
+    ports:
+      - '3307'
+    volumes:
+      - './docker/data/mariadb-db-sync:/var/lib/mysql'
+    healthcheck:
+      test: 'mysqladmin ping -h localhost -pmagento2'
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    networks:
+      magento:
+        aliases:
+          - ${MARIADB_HOST}
+  mysql:
+    container_name: ${APP_NAME}-mysql
+    hostname:  ${MYSQL_HOST}
+    image: ${MYSQL_VERSION}
+    shm_size: ${MYSQL_SHM_SIZE}
+    #command : --skip-grant-tables
+    command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_DATABASE: ${MAGENTO_DB_NAME} 
+      MYSQL_USER: ${MYSQL_USER} 
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_PORT: ${MYSQL_PORT}
+      #MYSQL_HOST: mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      #MYSQL_ENTRYPOINT_INITDB: ./mysql/docker-entrypoint-initdb.d
+    ports:
+      - '3306:3306'
+    volumes:
+      - './docker/data/mysql-db-sync:/var/lib/mysql'
+      - './docker/mysql/conf/:/etc/mysql/conf.d/'
+      - './docker/mysql-backup:/home/'
+    networks:
+      magento:
+        aliases:
+          - ${MYSQL_HOST}
+  # elasticsearch:
+  #   env_file: .env
+  #   image: ${ELASTIC_STACK_VERSION}
+  #   container_name: ${APP_NAME}-elasticsearch
+  #   hostname: ${ELASTIC_HOST_NAME}
+  #   ulimits:
+  #     memlock:
+  #       soft: -1
+  #       hard: -1
+  #   ports:
+  #     - "9200:9200"
+  #     - "9300:9300"
+  #   environment:
+  #     - cluster.name=docker-cluster
+  #     - discovery.type=single-node
+  #     - discovery.seed_hosts=opensearch
+  #     - bootstrap.memory_lock=true
+  #     - DISABLE_SECURITY_PLUGIN=true
+  #   volumes:
+  #     - ./docker/data/elasticsearchdata:/usr/share/elasticsearch/data
+  #   #mem_limit: ${ELS_MEM_LIMIT}
+  #   networks:
+  #     magento:
+  #       aliases:
+  #         - ${ELASTIC_HOST_NAME}
+  opensearch:
+    hostname: ${OPENSEARCH_HOST_NAME}  
+    image: ${OPENSEARCH_STACK_VERSION}
+    container_name: ${APP_NAME}-opensearch
+    env_file: .env  
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9400:9400"
+      - "9500:9500"    
+    environment:
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - discovery.seed_hosts=opensearch
+      - bootstrap.memory_lock=true
+      - DISABLE_SECURITY_PLUGIN=true
+    networks:
+      magento:
+        aliases:
+          - ${OPENSEARCH_HOST_NAME}
+  redis-obj:
+    env_file: .env
+    image: redis:${REDIS_VERSION}
+    container_name: ${APP_NAME}-redis-obj
+    hostname:  ${MAGENTO_REDIS_OBJ_HOST}
+    ports:
+      - "6379:6379"
+    restart: always
+    networks:
+      magento:
+        aliases:
+          - ${MAGENTO_REDIS_OBJ_HOST}
+  redis-fpc:
+    env_file: .env
+    command: redis-server /usr/local/etc/redis/redis.conf
+    image: redis:${REDIS_VERSION}
+    container_name: ${APP_NAME}-redis-fpc
+    hostname:  ${MAGENTO_REDIS_FPC_HOST}
+    ports:
+      - "6390:6390"
+    restart: always
+    volumes:
+      - ./docker/redis/config/fpc.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      magento:
+        aliases:
+          - ${MAGENTO_REDIS_FPC_HOST}
+  redis-ses:
+    env_file: .env
+    command: redis-server /usr/local/etc/redis/redis.conf
+    image: redis:${REDIS_VERSION}
+    container_name: ${APP_NAME}-redis-ses
+    hostname:  ${MAGENTO_REDIS_SES_HOST}
+    ports:
+      - "6382:6382"
+    restart: always
+    volumes:
+      - ./docker/redis/config/ses.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      magento:
+        aliases:
+          - ${MAGENTO_REDIS_SES_HOST}              
+#Volumes
+volumes:
+  mariadb-db-sync: {  }
+  mysql-db-sync: {  }
+networks:
+  magento:
+    driver: bridge
+  magento-build:
+    driver: bridge
