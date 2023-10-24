@@ -218,13 +218,13 @@ services:
     hostname:  ${PHPMYADMIN_HOST}
     environment:
       PMA_ARBITRARY: 1
-      PMA_HOST: '127.0.0.1'
-      PMA_USER: 'root'
-      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PMA_HOST: ${MYSQL_HOST}
+      PMA_USER: ${MYSQL_USER}
+      PMA_PASSWORD: ${MYSQL_PASSWORD}
     depends_on:
       - mysql  
     ports:
-      - 8080:80
+      - 8082:80
     networks:
       magento:
         aliases:
