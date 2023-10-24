@@ -8,7 +8,7 @@ services:
     container_name: ${APP_NAME}-php8
     hostname: ${PHP8_HOST_NAME}
     ports:
-      - "9008:9008"
+      - "9000:9000"
     links:
       - opensearch
       - mysql
@@ -43,8 +43,8 @@ services:
       - mysql
       - mariadb
     volumes:
-      - "./project_folder:/var/www/html"
-      - "./docker/nginx/config:/etc/nginx/conf.d"
+      - "./public_html:/var/www/html"
+      - "./docker/nginx/conf:/etc/nginx/conf.d"
     networks:
       magento:
         aliases:
