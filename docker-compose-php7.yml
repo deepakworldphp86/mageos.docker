@@ -1,0 +1,33 @@
+version: "3.1"
+services:
+  php7:
+    build:
+      context:  ./docker/
+      dockerfile: php7/php7.Dockerfile
+    env_file: .env
+    container_name: ${APP_NAME:?err}-php7
+    hostname: ${PHP7_HOST_NAME}
+    ports:
+      - "9000:9000"
+    links:
+      - opensearch
+      - mysql
+      - mariadb
+    depends_on:
+      - opensearch
+      - mysql
+      - mariadb
+    volumes:
+      - "./public_html2:/var/www/html/mageos.docker"
+      #- ".env:/var/www/scripts"
+      #- "./docker/scripts:/var/www/scripts"
+      - ./docker/php7/config/custom.ini:/usr/local/etc/php/conf.d/custom.ini    
+    networks:
+      magento:
+        aliases:
+          - ${PHP7_HOST_NAME}          
+networks:
+  magento:
+    driver: bridge
+  magento-build:
+    driver: bridge
