@@ -135,6 +135,19 @@ MAGENTO_REDIS_SES_DATABASE=0
  OPENSEARCH_MEM_LIMIT=3g
  OPENSEARCH_PORT=9400
 
+  #Phpmyadmin
+ PHPMYADMIN_VERSION=phpmyadmin/phpmyadmin
+ PHPMYADMIN_HOST=phpmyadmin.mageos.docker
+
+ #Mailhog
+ MAILHOG_VERSION=mailhog/mailhog:v1.0.0
+ MAGENTO_MAILHOG_HOST=mailhog.mageos.docker
+
+ #RABBIT MQ
+ MAGENTO_RABBITMQ_VERSION=rabbitmq:3.8.9-management
+ MAGENTO_RABBITMQ_HOST==rabbitmq.mageos.docker
+
+
 # COMPOSE_FILE=docker-compose.elasticsearch.yml
 
 # Magento (optional, Varnish)
