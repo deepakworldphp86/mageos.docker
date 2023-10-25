@@ -15,3 +15,11 @@ docker-compose up -d
 
 docker exec -it -u root mageos_docker-php8 bash 
 
+
+#URLS
+
+MaildHog =   http://localhost:8026/
+PHPMYADMIN = http://localhost:8082/
+RABBITMQ =    http://localhost:15673/
+OPEN SEARCH = http://localhost:9400/
+MAGENTO URL = http://mageos.docker/  - change url in .env

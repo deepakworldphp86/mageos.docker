@@ -132,8 +132,8 @@ services:
         soft: -1
         hard: -1
     ports:
-      - "9400:9400"
-      - "9500:9500"    
+      - "9400:9200"
+      - "9500:9300"    
     environment:
       - cluster.name=docker-cluster
       - discovery.type=single-node
@@ -192,8 +192,8 @@ services:
     container_name: ${APP_NAME}-rabbitmq
     hostname:  ${MAGENTO_RABBITMQ_HOST}
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      - "5673:5672"
+      - "15673:15672"
     restart: always
     networks:
       magento:
@@ -205,8 +205,8 @@ services:
     container_name: ${APP_NAME}-mailhog
     hostname:  ${MAGENTO_MAILHOG_HOST}
     ports:
-      - "1025:1025"
-      - "8025:8025"
+      - "1026:1025"
+      - "8026:8025"
     networks:
       magento:
         aliases:
