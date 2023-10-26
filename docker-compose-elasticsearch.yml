@@ -28,5 +28,3 @@ services:
 networks:
   magento:
     driver: bridge
-  magento-build:
-    driver: bridge
