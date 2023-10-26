@@ -249,7 +249,7 @@ services:
       - ./docker/portainer/var/run/docker.sock:/var/run/docker.sock:ro
       - ./data-sync/portainer/portainer-data:/data
     ports:
-      - "9000:9000"
+      - "9007:9000"
     networks:
       magento:
         aliases:
