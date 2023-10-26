@@ -260,5 +260,3 @@ volumes:
 networks:
   magento:
     driver: bridge
-  magento-build:
-    driver: bridge
