@@ -1,0 +1,32 @@
+version: "3.1"
+services:
+  elasticsearch:
+    env_file: .env
+    image: ${ELASTIC_STACK_VERSION}
+    container_name: ${APP_NAME}-elasticsearch
+    hostname: ${ELASTIC_HOST_NAME}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      - cluster.name=docker-cluster
+      - discovery.type=single-node
+      - discovery.seed_hosts=opensearch
+      - bootstrap.memory_lock=true
+      - DISABLE_SECURITY_PLUGIN=true
+    volumes:
+      - ./docker/data/elasticsearchdata:/usr/share/elasticsearch/data
+    #mem_limit: ${ELS_MEM_LIMIT}
+    networks:
+      magento:
+        aliases:
+          - ${ELASTIC_HOST_NAME}        
+networks:
+  magento:
+    driver: bridge
+  magento-build:
+    driver: bridge
