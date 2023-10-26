@@ -13,10 +13,12 @@ services:
       - opensearch
       - mysql
       - mariadb
+      - rabbitmq    
     depends_on:
       - opensearch
       - mysql
       - mariadb
+      - rabbitmq      
     volumes:
       - "./public_html:/var/www/html/"
       - "./env_sample:/var/www/.env"
@@ -38,10 +40,12 @@ services:
       - opensearch
       - mysql
       - mariadb
+      - rabbitmq   
     depends_on:
       - opensearch
       - mysql
       - mariadb
+      - rabbitmq   
     volumes:
       - "./public_html:/var/www/html"
       - "./docker/nginx/conf:/etc/nginx/conf.d"
@@ -97,31 +101,6 @@ services:
       magento:
         aliases:
           - ${MYSQL_HOST}
-  # elasticsearch:
-  #   env_file: .env
-  #   image: ${ELASTIC_STACK_VERSION}
-  #   container_name: ${APP_NAME}-elasticsearch
-  #   hostname: ${ELASTIC_HOST_NAME}
-  #   ulimits:
-  #     memlock:
-  #       soft: -1
-  #       hard: -1
-  #   ports:
-  #     - "9200:9200"
-  #     - "9300:9300"
-  #   environment:
-  #     - cluster.name=docker-cluster
-  #     - discovery.type=single-node
-  #     - discovery.seed_hosts=opensearch
-  #     - bootstrap.memory_lock=true
-  #     - DISABLE_SECURITY_PLUGIN=true
-  #   volumes:
-  #     - ./docker/data/elasticsearchdata:/usr/share/elasticsearch/data
-  #   #mem_limit: ${ELS_MEM_LIMIT}
-  #   networks:
-  #     magento:
-  #       aliases:
-  #         - ${ELASTIC_HOST_NAME}
   opensearch:
     hostname: ${OPENSEARCH_HOST_NAME}  
     image: ${OPENSEARCH_STACK_VERSION}
@@ -190,7 +169,12 @@ services:
     env_file: .env
     image: ${MAGENTO_RABBITMQ_VERSION}
     container_name: ${APP_NAME}-rabbitmq
-    hostname:  ${MAGENTO_RABBITMQ_HOST}
+    hostname:  ${MAGENTO_AMQP_HOST}
+    environment:
+      RABBITMQ_DEFAULT_USER: ${MAGENTO_AMQP_USER} 
+      RABBITMQ_DEFAULT_PASS: ${MAGENTO_AMQP_PASSWORD} 
+      RABBITMQ_DEFAULT_VHOST: ${MAGENTO_AMQP_VIRTUALHOST}
+      RABBITMQ_NODE_PORT: ${MAGENTO_AMQP_PORT}
     ports:
       - "5673:5672"
       - "15673:15672"
@@ -198,7 +182,7 @@ services:
     networks:
       magento:
         aliases:
-          - ${MAGENTO_RABBITMQ_HOST}       
+          - ${MAGENTO_AMQP_HOST}       
   mailhog:
     env_file: .env
     image: ${MAILHOG_VERSION}
@@ -219,8 +203,8 @@ services:
     environment:
       PMA_ARBITRARY: 1
       PMA_HOST: ${MYSQL_HOST}
-      PMA_USER: ${MYSQL_USER}
-      PMA_PASSWORD: ${MYSQL_PASSWORD}
+      PMA_USER: ${MYSQL_ROOT_USER}
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
     depends_on:
       - mysql  
     ports:
@@ -228,8 +212,48 @@ services:
     networks:
       magento:
         aliases:
-          - ${PHPMYADMIN_HOST}                       
-#Volumes
+          - ${PHPMYADMIN_HOST}
+  jenkins:
+    build:
+      context: ./docker/
+      dockerfile: jenkins/jenkins.Dockerfile
+    env_file: .env
+    container_name: ${APP_NAME}-jenkins
+    hostname: ${JENKINS_HOST}
+    ports:
+      - "8087:8080"
+    links:
+      - opensearch
+      - mysql
+      - mariadb
+      - rabbitmq    
+    depends_on:
+      - opensearch
+      - mysql
+      - mariadb
+      - rabbitmq
+    volumes:
+      - "./data-sync/jenkins-data-sync:/var/jenkins_home"
+      - "./docker/jenkins/jenkins-docker-certs:/certs/client:ro"
+    networks:
+      magento:
+        aliases:
+          - ${JENKINS_HOST}
+  portainer:
+    image: ${PORTAINER_VERSION}
+    container_name: ${APP_NAME}-portainer
+    hostname: ${PORTAINER_HOST}
+    restart: always
+    volumes:
+      - ./docker/portainer/etc/localtime:/etc/localtime:ro
+      - ./docker/portainer/var/run/docker.sock:/var/run/docker.sock:ro
+      - ./data-sync/portainer/portainer-data:/data
+    ports:
+      - "9000:9000"
+    networks:
+      magento:
+        aliases:
+          - ${PORTAINER_HOST}                                                         
 volumes:
   mariadb-db-sync: {  }
   mysql-db-sync: {  }

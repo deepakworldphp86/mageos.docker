@@ -2,15 +2,14 @@ APP_NAME=mageos_docker
 MAGE_INSTALLATION_FOLDER=mageos.docker
 #MYSQL_ROOT_PASSWORD=rootpass
 # Versions
-MAGE_OS_MIRRORS=https://mirror.mage-os.org/ 
-MAGE_OS_VERSION=magento/project-community-edition:2.4.6-p3
+MAGE_OS_MIRRORS=https://repo.mage-os.org/
+MAGE_OS_VERSION=mage-os/project-community-edition
 NGINX_VERSION=1.18
 PHP_VERSION=8.2
 MAGENTO_VERSION=2.4.6-p3
 MYSQL_VERSION=8.0
 REDIS_VERSION=6
 ELASTICSEARCH_VERSION=elasticsearch:8.9.2
-RABBITMQ_VERSION=3.8.9
 
 
 # PHP8
@@ -19,6 +18,7 @@ PHP8_HOST_NAME=php8.mageos.docker
 PHP7_HOST_NAME=php7.mageos.docker
 
 # MySQL
+MYSQL_ROOT_USER=root
 MYSQL_ROOT_PASSWORD=mageos@123
 MYSQL_USER=mageos
 MYSQL_PASSWORD=mageos@123
@@ -145,11 +145,29 @@ MAGENTO_REDIS_SES_DATABASE=0
 
  #RABBIT MQ
  MAGENTO_RABBITMQ_VERSION=rabbitmq:3.8.9-management
- MAGENTO_RABBITMQ_HOST==rabbitmq.mageos.docker
+ MAGENTO_AMQP_HOST=rabbitmq.mageos.docker
+ MAGENTO_AMQP_PORT=5672
+ MAGENTO_AMQP_USER=magento
+ MAGENTO_AMQP_PASSWORD=magento
+ MAGENTO_AMQP_VIRTUALHOST=magento
+
+ #JENKINS
+JENKINS_HOST=jenkins.mageos.docker
+
+ #PORTAINER
+PORTAINER_VERSION=portainer/portainer-ce:latest
+PORTAINER_HOST=portainer.mageos.docker
 
 
-# COMPOSE_FILE=docker-compose.elasticsearch.yml
+ #MAGENTO_AMQP_SSL=
+ #COMPOSE_FILE=docker-compose.elasticsearch.yml
 
 # Magento (optional, Varnish)
 #VCL_CONFIG=/data/varnish.vcl
 #VARNISHD_PARAMS=-p default_ttl=3600 -p default_grace=3600 -p feature=+esi_ignore_https -p feature=+esi_disable_xml_check
+
+    # environment:
+    #   RABBITMQ_DEFAULT_USER: ${MAGENTO_AMQP_USER} 
+    #   RABBITMQ_DEFAULT_PASS: ${MAGENTO_AMQP_PASSWORD} 
+    #   RABBITMQ_DEFAULT_VHOST: ${MAGENTO_AMQP_VIRTUALHOST}
+    #   RABBITMQ_NODE_PORT: ${MAGENTO_AMQP_PORT}
